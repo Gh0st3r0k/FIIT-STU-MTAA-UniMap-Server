@@ -1,5 +1,6 @@
 package org.main.unimapapi.configs;
 
-public class AppConfig {
+
+public class DataSourceConfig {
 
 }
