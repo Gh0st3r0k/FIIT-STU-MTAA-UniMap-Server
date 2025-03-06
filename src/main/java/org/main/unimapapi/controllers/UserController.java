@@ -57,7 +57,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
 
-            User user = registrationService.register(new User_dto(login, email, passwordHash, username, false, null));
+            User user = registrationService.register(new User_dto(login, email, passwordHash, username, false, false,null));
             if (user == null) {
                 ServerLogger.logServer(ServerLogger.Level.ERROR, "Registration failed: User object is null.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
