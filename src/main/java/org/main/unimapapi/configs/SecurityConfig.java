@@ -45,6 +45,8 @@ public class SecurityConfig {
                                         "/api/unimap_pc/log"
                                         "/api/unimap_pc/comments/teacher/**",
                                         "/api/unimap_pc/comments/subject/**",
+                                         "/api/unimap_pc/comments/subject",
+                                        "/api/unimap_pc/comments/teacher",
                                         "/api/unimap_pc/news/all"
                                          // TODO: error page "/error"
                                 ).permitAll()
