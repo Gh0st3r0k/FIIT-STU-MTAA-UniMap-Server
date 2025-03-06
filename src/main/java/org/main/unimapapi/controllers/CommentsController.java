@@ -1,16 +1,21 @@
 package org.main.unimapapi.controllers;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import lombok.RequiredArgsConstructor;
 import org.main.unimapapi.dtos.Comment_dto;
+import org.main.unimapapi.entities.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.web.bind.annotation.*;
+import org.main.unimapapi.services.TokenService;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -18,6 +23,23 @@ import java.util.List;
 @RequestMapping("/api/unimap_pc/comments")
 public class CommentsController {
     private final JdbcTemplate jdbcTemplate;
+    private final TokenService tokenService;
+
+    private boolean isNum(String id) {
+        // If the string is empty or uninitialized at all
+        if (id == null || id.trim().isEmpty()) {
+            return false;
+        }
+
+        // In case the value could be interpreted as number
+        // Then no injection right here will be performed
+        if (!id.matches("\\d+")) {
+            return false;
+        }
+
+        // If it is ok
+        return true;
+    }
 
     private final RowMapper<Comment_dto> subjectsRowMapper = new RowMapper<Comment_dto>() {
         @Override
@@ -40,6 +62,7 @@ public class CommentsController {
             return comment;
         }
     };
+
     private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
         try {
             rs.findColumn(columnName);
@@ -48,14 +71,21 @@ public class CommentsController {
             return false;
         }
     }
+
     @GetMapping("/subject/{subject_id}")
-    public ResponseEntity<List<Comment_dto>> getAllSubjectsComments(@PathVariable String subject_id) {
+    public ResponseEntity<List<Comment_dto>> getAllSubjectsComments(@PathVariable("subject_id") String subjectId) {
         try {
-            String sql = "SELECT u_d.name, c_s.*\n" +
-                    "FROM comments_subjects c_s\n" +
-                    "    INNER JOIN user_data u_d ON c_s.user_id = u_d.id\n" +
-                    "WHERE c_s.subject_code = ?";
-            List<Comment_dto> subjectsList = jdbcTemplate.query(sql, new Object[]{subject_id}, subjectsRowMapper);
+            String sql = "SELECT * FROM comments_subjects WHERE subject_code = ?";
+
+            // Then injection right here will be performed
+            if (!isNum(subjectId)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.emptyList());
+            }
+
+            // Getting the list of subject-comments if they exist
+            List<Comment_dto> subjectsList = jdbcTemplate.query(sql, new Object[]{subjectId}, subjectsRowMapper);
+
             return ResponseEntity.ok(subjectsList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -64,27 +94,51 @@ public class CommentsController {
     }
 
     @GetMapping("/teacher/{teacher_id}")
-    public ResponseEntity<List<Comment_dto>> getAllTeachersComments(@PathVariable String teacher_id) {
+
+    public ResponseEntity<List<Comment_dto>> getAllTeachersComments(@PathVariable("teacher_id") String teacherId) {
         try {
-            String sql = "SELECT u_d.name, c_t.*\n" +
-                    "FROM comments_teachers c_t\n" +
-                    "    INNER JOIN user_data u_d ON c_t.user_id = u_d.id\n" +
-                    "WHERE c_t.teacher_id = ?";
-            List<Comment_dto> teachersList = jdbcTemplate.query(sql, new Object[]{teacher_id}, subjectsRowMapper);
+            String sql = "SELECT * FROM comments_teachers WHERE teachers_id = ?";
+
+            // Then injection right here will be performed
+            if (!isNum(teacherId)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.emptyList());
+            }
+
+            // Now, executing the query and trying to get the array of comments
+            List<Comment_dto> teachersList = jdbcTemplate.query(sql, new Object[]{teacherId}, subjectsRowMapper);
+
             return ResponseEntity.ok(teachersList);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
         }
     }
 
 
 
     @PostMapping("/subject")
-    public ResponseEntity<Void> addNewSubjectComment(@RequestBody Comment_dto comment) {
+    public ResponseEntity<Void> addNewSubjectComment(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String accessToken) {
         try {
+            // Validate access token
+            String token = accessToken.replace("Bearer ", "");
+            String username = tokenService.getLoginFromAccessToken(token);
+            if (!tokenService.validateAccessToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            // Extract data from JSON payload
+            int userId = Integer.parseInt((String) payload.get("user_id"));
+            String subjectCode = (String) payload.get("code");
+            String description = (String) payload.get("text");
+            int rating = (int) payload.get("rating");
+            int levelAccess = Integer.parseInt((String) payload.get("levelAccess"));
+
+            System.out.println("New comment with datas" + userId+subjectCode+description+rating+levelAccess);
+            // Insert data into the database
             String sql = "INSERT INTO comments_subjects (user_id, subject_code, description, rating, levelaccess) VALUES (?, ?, ?, ?, ?)";
-            jdbcTemplate.update(sql, comment.getUser_id(), comment.getLooking_id(), comment.getDescription(), comment.getRating(), comment.getLevelAccess());
+            jdbcTemplate.update(sql, userId, subjectCode, description, rating, levelAccess);
+
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,10 +147,26 @@ public class CommentsController {
     }
 
     @PostMapping("/teacher")
-    public ResponseEntity<Void> addNewTeacherComment(@RequestBody Comment_dto comment) {
+    public ResponseEntity<Void> addNewTeacherComment(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String accessToken)  {
         try {
+            // Validate access token
+            String token = accessToken.replace("Bearer ", "");
+            String username = tokenService.getLoginFromAccessToken(token);
+            if (!tokenService.validateAccessToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            // Extract data from JSON payload
+            int userId = Integer.parseInt((String) payload.get("user_id"));
+            String teacher_id = (String) payload.get("code");
+            String description = (String) payload.get("text");
+            int rating = (int) payload.get("rating");
+            int levelAccess = Integer.parseInt((String) payload.get("levelAccess"));
+
+            System.out.println("New comment with datas" + userId+teacher_id+description+rating+levelAccess);
+
             String sql = "INSERT INTO comments_teachers (user_id, teacher_id, description, rating, levelaccess) VALUES (?, ?, ?, ?, ?)";
-            jdbcTemplate.update(sql, comment.getUser_id(), comment.getLooking_id(), comment.getDescription(), comment.getRating(), comment.getLevelAccess());
+            jdbcTemplate.update(sql, userId, teacher_id, description, rating, levelAccess);
+
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             e.printStackTrace();
