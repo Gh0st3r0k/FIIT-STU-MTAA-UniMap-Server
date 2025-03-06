@@ -11,6 +11,7 @@ import org.main.unimapapi.utils.EmailSender;
 import org.main.unimapapi.utils.Hashing;
 import org.main.unimapapi.utils.JwtToken;
 import org.main.unimapapi.utils.ServerLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,10 @@ public class UserController {
     private final UserService userService;
     private final RegistrationService registrationService;
     private final AuthService authService;
-    private final ConfirmationCodeService confirmationCodeService;
     private final JwtToken jwtToken;
+    private final TokenService tokenService;
+    private final ConfirmationCodeService confirmationCodeService;
+
 
     @PostMapping("register")
     public ResponseEntity<User> register(@RequestBody String jsonData) {
@@ -48,11 +51,12 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
+         //   TEST {"data":"QWERTY:1234567890q:qwerty@stuba.sk:qwerty"}
             String username = parts[0];
-            String password = parts[2];
+            String email = parts[2];
+            String password = parts[1];
             String passwordHash = Hashing.hashPassword(password);
-            String login = parts[1];
-	    String email = parts[3];
+            String login = parts[3];
 
 
             System.out.println("TEST3");
@@ -60,7 +64,7 @@ public class UserController {
                     userService.findByEmail(email).isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-            User user = registrationService.register(new User_dto(login, email, passwordHash, username, false, false,null));
+            User user = registrationService.register(new User_dto(login,email,passwordHash,username, false, false,null));
 
             System.out.println("TEST4 "+user.getLogin()+" "+user.getEmail()+" "+user.getPassword()+" "+user.getUsername());
 
@@ -113,9 +117,14 @@ public class UserController {
                             "accessToken", accessToken
                     ));
         } catch (Exception e) {
+            ServerLogger.logServer(ServerLogger.Level.ERROR,
+                    "Authentication failed | Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+
 
     @GetMapping("user/email/{email}")
     public ResponseEntity<Void> confirmEmailExists(@PathVariable String email) {
@@ -135,6 +144,9 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+
 
     @PostMapping("user/email/password")
     public ResponseEntity<Void> changePassword(@RequestBody String jsonData) {
@@ -160,6 +172,8 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
         } catch (Exception e) {
+            ServerLogger.logServer(ServerLogger.Level.ERROR,
+                    "Change password failed | Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -182,14 +196,54 @@ public class UserController {
             Optional<User> user = userService.findByEmail(email);
             Long id = user.map(User::getId).orElse(null);
 
-            System.out.println("TEST2 "+id +" "+userCode);
 
             boolean isCodeValid = confirmationCodeService.validateConfirmationCode(id, userCode);
-            System.out.println("TEST3 "+isCodeValid);
+
             return ResponseEntity.ok(isCodeValid);
         } catch (Exception e) {
-            e.printStackTrace();
+
+            ServerLogger.logServer(ServerLogger.Level.ERROR,
+                    "Compare code failed | Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @DeleteMapping("user/delete/all/{userId}")
+    private ResponseEntity<Boolean> deleteUserData(@PathVariable String userId,@RequestHeader("Authorization") String accessToken) {
+        System.out.println("I have delete userdata request in id: "+userId);
+        try {
+            String token = accessToken.replace("Bearer ", "");
+            String username = tokenService.getLoginFromAccessToken(token);
+            if (!tokenService.validateAccessToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            System.out.println("I have delete userdata request in id: "+userId);
+            userService.delete_all_user_info(Long.parseLong(userId));
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    }
+
+    @DeleteMapping("user/delete/comments/{userId}")
+    private ResponseEntity<Boolean> deleteUserComments(@PathVariable String userId, @RequestHeader("Authorization") String accessToken) {
+        System.out.println("I have delete user comments request in id: "+userId);
+        try {
+            String token = accessToken.replace("Bearer ", "");
+            String username = tokenService.getLoginFromAccessToken(token);
+            if (!tokenService.validateAccessToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            userService.delete_all_user_comments(Long.parseLong(userId));
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    }
+
 }
+

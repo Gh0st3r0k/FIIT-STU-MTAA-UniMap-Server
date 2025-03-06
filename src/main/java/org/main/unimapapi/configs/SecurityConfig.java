@@ -35,10 +35,13 @@ public class SecurityConfig {
                                         "/login**",
                                         "/api/unimap_pc/user/email/change_pass/**",
                                         "/api/unimap_pc/change_avatar/**",
+                                        "/api/unimap_pc/change_username/**",
+                                        "/api/unimap_pc/change_email/**",
                                         "/api/unimap_pc/check-connection",
                                         "/api/unimap_pc/authenticate/**",
                                         "/api/unimap_pc/register",
                                         "/api/unimap_pc/user/email/**",
+                                        "/api/unimap_pc/user/change_email/**",
                                         "/api/unimap_pc/user/create",
                                         "/api/unimap_pc/refresh",
                                         "/api/unimap_pc/resources/**",
@@ -52,7 +55,9 @@ public class SecurityConfig {
                                         "/api/unimap_pc/comments/teacher",
                                         "/api/unimap_pc/news/all",
 
-                                        "/api/unimap_pc/user/email/**"
+                                        "/api/unimap_pc/user/email/**",
+                                         "/api/unimap_pc/user/delete/comments/**",
+                                        "/api/unimap_pc/user/delete/all/**"
                                          // TOD O: error page "/error"
 
                                 ).permitAll()
