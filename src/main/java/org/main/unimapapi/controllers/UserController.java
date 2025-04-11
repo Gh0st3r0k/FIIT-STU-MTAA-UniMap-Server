@@ -33,7 +33,6 @@ public class UserController {
     private final TokenService tokenService;
     private final ConfirmationCodeService confirmationCodeService;
 
-
     @PostMapping("register")
     public ResponseEntity<User> register(@RequestBody String jsonData) {
         try {
@@ -45,38 +44,39 @@ public class UserController {
             String data = jsonNode.get("data").asText();
             String[] parts = data.split(":");
             if (parts.length != 4) {
+                //ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid registration data format.");
 
                 System.out.println("TEST2");
-
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
-         //   TEST {"data":"QWERTY:1234567890q:qwerty@stuba.sk:qwerty"}
+            //   TEST {"data":"QWERTY:1234567890q:qwerty@stuba.sk:qwerty"}
             String username = parts[0];
             String email = parts[2];
             String password = parts[1];
             String passwordHash = Hashing.hashPassword(password);
             String login = parts[3];
 
+            ServerLogger.logServer(ServerLogger.Level.INFO, "Registration attempt: username=" + username + ", email=" + email + ", login=" + login);
 
             System.out.println("TEST3");
             if (userService.findByLogin(login).isPresent() ||
                     userService.findByEmail(email).isPresent()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                //ServerLogger.logServer(ServerLogger.Level.WARNING, "Registration failed: User already exists (login=" + login + ", email=" + email + ")");
+                return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
             User user = registrationService.register(new User_dto(login,email,passwordHash,username, false, false,null));
 
             System.out.println("TEST4 "+user.getLogin()+" "+user.getEmail()+" "+user.getPassword()+" "+user.getUsername());
 
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                ServerLogger.logServer(ServerLogger.Level.ERROR, "Registration failed: User object is null.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
             //ServerLogger.logServer(ServerLogger.Level.INFO, "User registered successfully: login=" + login);
             return ResponseEntity.ok(user);
         } catch (Exception e) {
-
-            e.printStackTrace(); // Log the exception details
-
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Registration error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -125,7 +125,6 @@ public class UserController {
 
 
 
-
     @GetMapping("user/email/{email}")
     public ResponseEntity<Void> confirmEmailExists(@PathVariable String email) {
         try {
@@ -146,8 +145,6 @@ public class UserController {
     }
 
 
-
-
     @PostMapping("user/email/password")
     public ResponseEntity<Void> changePassword(@RequestBody String jsonData) {
         try {
@@ -156,7 +153,6 @@ public class UserController {
             String data = jsonNode.get("data").asText();
             String[] parts = data.split(":");
 
-            System.out.println("TEST "+data);
             if (parts.length != 2) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
@@ -191,17 +187,12 @@ public class UserController {
             String email = parts[0];
             String userCode = parts[1];
 
-            System.out.println("TEST "+data);
-
             Optional<User> user = userService.findByEmail(email);
             Long id = user.map(User::getId).orElse(null);
 
-
             boolean isCodeValid = confirmationCodeService.validateConfirmationCode(id, userCode);
-
             return ResponseEntity.ok(isCodeValid);
         } catch (Exception e) {
-
             ServerLogger.logServer(ServerLogger.Level.ERROR,
                     "Compare code failed | Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -246,4 +237,3 @@ public class UserController {
     }
 
 }
-
