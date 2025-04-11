@@ -31,11 +31,11 @@ public class ConfirmationCodeRepository {
     }
 
     public boolean find(Long userId, String code) {
-    String sql = "SELECT * FROM confirm_codes WHERE id_code = ? and code = ?";
-    List<ConfirmationCode> results = jdbcTemplate.query(sql, confirmationCodeRowMapper, userId, code);
-    System.out.println(results);
-    return !results.isEmpty();
-}
+        String sql = "SELECT * FROM confirm_codes WHERE id_code = ? and code = ?";
+        List<ConfirmationCode> results = jdbcTemplate.query(sql, confirmationCodeRowMapper, userId, code);
+        System.out.println(results);
+        return !results.isEmpty();
+    }
     public void save(ConfirmationCode confirmationCode) {
         // The only way injection may appear here is
         // When the code is null, jdbc may not screen it properly
