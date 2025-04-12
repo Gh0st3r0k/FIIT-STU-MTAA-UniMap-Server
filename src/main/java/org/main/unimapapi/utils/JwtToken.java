@@ -11,6 +11,18 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.Key;
 import java.util.Date;
 
+/*
+ * Utility for generating, parsing and validating JWT tokens
+ *
+ * Used for:
+ * - Authorisation and authentication (access / refresh tokens)
+ * - User validation by token
+ * - Built in TokenService
+ *
+ * Uses secret keys from AppConfig:
+ * - ACCESS_SECRET_KEY (short lived token)
+ * - REFRESH_SECRET_KEY (long-lived token)
+ */
 @Builder
 @Component
 public class JwtToken {
@@ -27,6 +39,7 @@ public class JwtToken {
         return Keys.hmacShaKeyFor(REFRESH_SECRET_KEY.getBytes());
     }
 
+    // Generates an access token for 1 minute
     public String generateAccessToken(String login) {
         return Jwts.builder()
                 .setSubject(login)
@@ -35,6 +48,8 @@ public class JwtToken {
                 .signWith(getAccessSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    // Generates a refresh token for 1 day
     public String generateRefreshToken(String login) {
         return Jwts.builder()
                 .setSubject(login)
@@ -44,6 +59,7 @@ public class JwtToken {
                 .compact();
     }
 
+    // Extracts the login from the access token
     public String extractUsernameFromAccessToken(String token) {
         try {
             return extractClaims(token, getAccessSigningKey()).getSubject();
@@ -53,6 +69,8 @@ public class JwtToken {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid access token");
         }
     }
+
+    // Retrieves the login from the refresh token
     public String extractUsernameFromRefreshToken(String token) {
         try {
             return extractClaims(token, getRefreshSigningKey()).getSubject();
@@ -63,6 +81,7 @@ public class JwtToken {
         }
     }
 
+
     private Claims extractClaims(String token, Key key) {
         return Jwts.parser()
                 .setSigningKey(key)
@@ -71,6 +90,7 @@ public class JwtToken {
                 .getBody();
     }
 
+    // Checks access token by login (subject + not expired)
     public boolean validateAccessToken(String token, String username) {
         try {
             Claims claims = extractClaims(token, getAccessSigningKey());
@@ -84,6 +104,7 @@ public class JwtToken {
     }
 
 
+    // Checks the access token against the extracted subject
     public boolean validateAccessToken(String token) {
         String username = extractUsernameFromAccessToken(token);
         try {
@@ -97,6 +118,7 @@ public class JwtToken {
         }
     }
 
+    // Checks refresh token (by login and expiry date)
     public boolean validateRefreshToken(String token, String username) {
         try {
             Claims claims = extractClaims(token, getRefreshSigningKey());

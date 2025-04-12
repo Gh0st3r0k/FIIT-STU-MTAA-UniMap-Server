@@ -12,6 +12,15 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
+/*
+ * Security configuration for UniMap application
+ *
+ * Configures:
+ * - public and secure routes
+ * - OAuth2 authorisation via Google and Facebook
+ * - handling of successful login via custom handler
+ * - logout
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -24,11 +33,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // HTTP Security Configuration
     private void configureHttpSecurity(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable());
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                // List all endpoints accessible without authorisation
                                 .requestMatchers(
                                         "/",
                                         "/oauth2/**",
@@ -59,8 +70,8 @@ public class SecurityConfig {
                                          "/api/unimap_pc/user/delete/comments/**",
                                         "/api/unimap_pc/user/delete/all/**"
                                          // TOD O: error page "/error"
-
                                 ).permitAll()
+                                // All other requests require authorisation
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login ->

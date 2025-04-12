@@ -13,6 +13,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+ * Controller to get a list of all teachers (teachers)
+ *
+ * URL: /api/unimap_pc/resources/teachers
+ * Requires JWT Access Token
+ * Method: GET
+ * Endpoint: /resources/teachers
+ * Header: Authorisation: Bearer {access_token}
+ * Response: JSON with list of teachers
+ */
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/unimap_pc/")

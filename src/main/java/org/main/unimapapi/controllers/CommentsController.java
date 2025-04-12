@@ -16,6 +16,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * Controller for managing comments on subjects and teachers
+ *
+ * URL prefix: /api/unimap_pc/comments
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/unimap_pc/comments")
@@ -60,6 +65,10 @@ public class CommentsController {
         }
     }
 
+    /*
+     * Method: GET
+     * Endpoint: /subject/{subject_id}
+     */
     @GetMapping("/subject/{subject_id}")
     public ResponseEntity<List<Comment_dto>> getAllSubjectsComments(@PathVariable("subject_id") String subjectId) {
         try {
@@ -75,6 +84,10 @@ public class CommentsController {
         }
     }
 
+    /*
+     * Method: GET
+     * Endpoint: /teacher/{teacher_id}
+     */
     @GetMapping("/teacher/{teacher_id}")
     public ResponseEntity<List<Comment_dto>> getAllTeachersComments(@PathVariable("teacher_id") String teacherId) {
         try {
@@ -90,6 +103,11 @@ public class CommentsController {
         }
     }
 
+    /*
+     * Method: POST
+     * Endpoint: /subject
+     * Authorisation header required (JWT access token)
+     */
     @PostMapping("/subject")
     public ResponseEntity<Void> addNewSubjectComment(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String accessToken) {
         try {
@@ -114,6 +132,11 @@ public class CommentsController {
         }
     }
 
+    /*
+     * Method: POST
+     * Endpoint: /teacher
+     * Authorisation header required (JWT access token)
+     */
     @PostMapping("/teacher")
     public ResponseEntity<Void> addNewTeacherComment(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String accessToken) {
         try {
@@ -138,6 +161,10 @@ public class CommentsController {
         }
     }
 
+    /*
+     * Method: DELETE
+     * Endpoint: /subject/{comment_id}
+     */
     @DeleteMapping("/subject/{comment_id}")
     public ResponseEntity<Void> deleteSubjectComment(@PathVariable("comment_id") int commentId) {
         try {
@@ -150,6 +177,11 @@ public class CommentsController {
         }
     }
 
+
+    /*
+     * Method: DELETE
+     * Endpoint: /teacher/{comment_id}
+     */
     @DeleteMapping("/teacher/{comment_id}")
     public ResponseEntity<Void> deleteTeacherComment(@PathVariable("comment_id") int commentId) {
         try {

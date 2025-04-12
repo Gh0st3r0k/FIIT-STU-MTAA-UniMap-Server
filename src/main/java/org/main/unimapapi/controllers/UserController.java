@@ -22,6 +22,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+/*
+ * Controller that manages registration, authentication, access restoration,
+ * email confirmation and deletion of user data
+ *
+ * URL prefix: /api/unimap_pc/
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/unimap_pc/")
@@ -33,6 +39,12 @@ public class UserController {
     private final TokenService tokenService;
     private final ConfirmationCodeService confirmationCodeService;
 
+    /*
+     * Method: POST
+     * Endpoint: /register
+     * Body: string "username:password:email:login"
+     * Response: User object or error code
+     */
     @PostMapping("register")
     public ResponseEntity<User> register(@RequestBody String jsonData) {
         try {
@@ -50,7 +62,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
-            //   TEST {"data":"QWERTY:1234567890q:qwerty@stuba.sk:qwerty"}
+         //   TEST {"data":"QWERTY:1234567890q:qwerty@stuba.sk:qwerty"}
             String username = parts[0];
             String email = parts[2];
             String password = parts[1];
@@ -62,7 +74,7 @@ public class UserController {
             System.out.println("TEST3");
             if (userService.findByLogin(login).isPresent() ||
                     userService.findByEmail(email).isPresent()) {
-                //ServerLogger.logServer(ServerLogger.Level.WARNING, "Registration failed: User already exists (login=" + login + ", email=" + email + ")");
+                 //ServerLogger.logServer(ServerLogger.Level.WARNING, "Registration failed: User already exists (login=" + login + ", email=" + email + ")");
                 return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
             User user = registrationService.register(new User_dto(login,email,passwordHash,username, false, false,null));
@@ -81,6 +93,12 @@ public class UserController {
         }
     }
 
+    /*
+     * Method: POST
+     * Endpoint: /authenticate
+     * Body: string "login:password"
+     * Response: User + accessToken + refreshToken (in cookie)
+     */
     @PostMapping("authenticate")
     public ResponseEntity<?> authenticate(@RequestBody String jsonData) {
         try {
@@ -124,7 +142,11 @@ public class UserController {
     }
 
 
-
+    /*
+     * Method: GET
+     * Endpoint: /user/email/{email}
+     * Action: generate and send confirmation code
+     */
     @GetMapping("user/email/{email}")
     public ResponseEntity<Void> confirmEmailExists(@PathVariable String email) {
         try {
@@ -145,6 +167,11 @@ public class UserController {
     }
 
 
+    /*
+     * Method: POST
+     * Endpoint: /user/email/password
+     * Body: string "email:new_password"
+     */
     @PostMapping("user/email/password")
     public ResponseEntity<Void> changePassword(@RequestBody String jsonData) {
         try {
@@ -174,6 +201,13 @@ public class UserController {
         }
     }
 
+
+    /*
+     * Method: POST
+     * Endpoint: /user/email/code
+     * Body: string "email:code"
+     * Response: true / false
+     */
     @PostMapping("user/email/code")
     public ResponseEntity<Boolean> compareCodes(@RequestBody String jsonData) {
         try {
@@ -199,6 +233,12 @@ public class UserController {
         }
     }
 
+
+    /*
+     * Method: DELETE
+     * Endpoint: /user/delete/all/{userId}
+     * Required: JWT access token
+     */
     @DeleteMapping("user/delete/all/{userId}")
     private ResponseEntity<Boolean> deleteUserData(@PathVariable String userId,@RequestHeader("Authorization") String accessToken) {
         System.out.println("I have delete userdata request in id: "+userId);
@@ -218,6 +258,11 @@ public class UserController {
         }
     }
 
+    /*
+     * Method: DELETE
+     * Endpoint: /user/delete/comments/{userId}
+     * Required: JWT access token
+     */
     @DeleteMapping("user/delete/comments/{userId}")
     private ResponseEntity<Boolean> deleteUserComments(@PathVariable String userId, @RequestHeader("Authorization") String accessToken) {
         System.out.println("I have delete user comments request in id: "+userId);

@@ -8,6 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/*
+ * Controller for handling username change requests
+ *
+ * URL prefix: /api/unimap_pc
+ * Method: POST
+ * Endpoint: /change_username
+ */
 @RestController
 @RequestMapping("/api/unimap_pc")
 public class ChangeUsernameController {

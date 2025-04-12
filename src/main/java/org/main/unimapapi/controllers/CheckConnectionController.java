@@ -8,6 +8,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
+/*
+ * Controller to check the connection status to the server
+ *
+ * URL prefix: /api/unimap_pc
+ * Method: GET
+ * Endpoint: /check-connection
+ */
 @RestController
 @RequestMapping("/api/unimap_pc")
 public class CheckConnectionController {

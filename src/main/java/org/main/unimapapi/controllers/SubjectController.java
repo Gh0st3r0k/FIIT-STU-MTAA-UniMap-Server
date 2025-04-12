@@ -13,6 +13,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+ * Controller to obtain all available items (subjects)
+ *
+ * URL: /api/unimap_pc/resources/subjects
+ * Requires JWT Access Token
+ * Method: GET
+ * Endpoint: /resources/subjects
+ * Header: Authorisation: Bearer {access_token}
+ * Response: JSON with an array of all subjects
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/unimap_pc/")

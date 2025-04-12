@@ -7,6 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/*
+ * Controller for processing user password change requests
+ *
+ * URL prefix: /api/unimap_pc
+ * Method: POST
+ * Endpoint: /change_pass
+ */
 @RestController
 @RequestMapping("/api/unimap_pc")
 public class ChangePassController {

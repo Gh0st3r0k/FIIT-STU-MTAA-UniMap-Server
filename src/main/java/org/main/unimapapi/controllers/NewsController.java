@@ -15,6 +15,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+/*
+ * Controller to get the news displayed in UniMap application
+ *
+ * URL prefix: /api/unimap_pc/news
+ * Method: GET
+ * Endpoint: /all
+ * Output: list of news with fields (id, title, content, date_of_creation)
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/unimap_pc/news")

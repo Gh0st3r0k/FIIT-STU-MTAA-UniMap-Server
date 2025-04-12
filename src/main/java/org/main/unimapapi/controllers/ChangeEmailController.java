@@ -7,6 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/*
+ * Controller for processing requests to change user email
+ *
+ * URL prefix: /api/unimap_pc
+ * Method: POST
+ * Endpoint: /change_email
+ */
 @RestController
 @RequestMapping("/api/unimap_pc")
 public class ChangeEmailController {

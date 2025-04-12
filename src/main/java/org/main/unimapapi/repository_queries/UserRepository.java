@@ -11,11 +11,19 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+/*
+ * Repository for working with user table (`user_data`)
+ *
+ * Used in:
+ * - AuthService / RegistrationService / UserService
+ * - UserController → registration, login, data change, deletion
+ */
 @Repository
 public class UserRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // Converts the SQL query result string into a User object
     private final RowMapper<User> userRowMapper = new RowMapper<User>() {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -73,21 +81,30 @@ public class UserRepository {
         return jdbcTemplate.query(sql, userRowMapper);
     }
 
+    // Saving a new user
     public void save(User user) {
         String sql = "INSERT INTO user_data (login, email, password, name, is_admin,is_premium,avatar_path) VALUES (?, ?, ?, ?,?, ?, ?)";
         jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(),user.isPremium(), user.getAvatar());
     }
 
+    // Updating an existing user by ID
     public void update(User user) {
         String sql = "UPDATE user_data SET login = ?, email = ?, password = ?, name = ?, is_admin = ?, is_premium= ?,avatar_path = ? WHERE id = ?";
         jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(),user.isPremium(),user.getAvatar(), user.getId());
     }
 
+    // Deleting a user by ID
     public void deleteById(Long id) {
         String sql = "DELETE FROM user_data WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
+    /*
+     * Deletes EVERYTHING related to the user:
+     * - comments on subjects and teachers
+     * - confirmation codes
+     * - the account itself
+     */
     public void deleteAllUserInfo(Long id) {
         String deleteCommentsSubjectsSql = "DELETE FROM comments_subjects WHERE user_id = ?";
         String deleteCommentsTeachersSql = "DELETE FROM comments_teachers WHERE user_id = ?";
@@ -101,6 +118,7 @@ public class UserRepository {
 
     }
 
+    // Deletes only the user's comments
     public void deleteAllUserComments(Long id) {
         String deleteCommentsSubjectsSql = "DELETE FROM comments_subjects WHERE user_id = ?";
         String deleteCommentsTeachersSql = "DELETE FROM comments_teachers WHERE user_id = ?";

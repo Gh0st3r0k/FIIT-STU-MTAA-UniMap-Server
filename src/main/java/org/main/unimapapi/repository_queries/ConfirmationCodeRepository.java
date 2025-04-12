@@ -10,11 +10,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+/*
+ * Repository for working with confirmation codes
+ *
+ * Used for email confirmation and password recovery
+ * Table: confirm_codes
+ */
 @Repository
 public class ConfirmationCodeRepository {
     @Autowired
     private final JdbcTemplate jdbcTemplate;
 
+    // RowMapper to convert the result of the SQL query into a ConfirmationCode object
     private final RowMapper<ConfirmationCode> confirmationCodeRowMapper = new RowMapper<ConfirmationCode>() {
         @Override
         public ConfirmationCode mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -30,12 +37,15 @@ public class ConfirmationCodeRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // Checks for a confirmation code by userId and the code itself
     public boolean find(Long userId, String code) {
         String sql = "SELECT * FROM confirm_codes WHERE id_code = ? and code = ?";
         List<ConfirmationCode> results = jdbcTemplate.query(sql, confirmationCodeRowMapper, userId, code);
         System.out.println(results);
         return !results.isEmpty();
     }
+
+    // Saves the new confirmation code to the database
     public void save(ConfirmationCode confirmationCode) {
         // The only way injection may appear here is
         // When the code is null, jdbc may not screen it properly
@@ -48,6 +58,7 @@ public class ConfirmationCodeRepository {
         jdbcTemplate.update(sql, confirmationCode.getUserId(), confirmationCode.getCode(), confirmationCode.getExpirationTime());
     }
 
+    // Removes the confirmation code by userId and code
     public void deleteByUserId(Long userId, String code) {
         String sql = "DELETE FROM confirm_codes WHERE code = ? and id_code = ?";
         jdbcTemplate.update(sql, code, userId);

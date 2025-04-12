@@ -4,6 +4,16 @@ import org.main.unimapapi.dtos.LogEntry;
 import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.web.bind.annotation.*;
 
+/*
+ * Controller for receiving logs from the client (frontend application)
+ *
+ * URL prefix: /api/unimap_pc
+ *
+ * Method: POST
+ * Endpoint: /log
+ * Input: JSON object `LogEntry` with type, message and source
+ * Response: string about logging success or error
+ */
 @RestController
 @RequestMapping("/api/unimap_pc")
 public class LogsController {

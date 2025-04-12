@@ -12,6 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/*
+ * Controller to handle JWT Access Token refresh by Refresh Token
+ *
+ * URL prefix: /api/unimap_pc
+ * Method: POST
+ * Endpoint: /refresh
+ * Input: { "refreshToken": "." }
+ * Output: { "accessToken": "..." } or 401 if the token is invalid
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/unimap_pc/")

@@ -15,6 +15,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+ * Repository to sample data by subject and teacher
+ *
+ * Used in:
+ * - SubjectController -> /resources/subjects
+ * - TeacherController -> /resources/teachers
+ */
 @Repository
 public class DataFatcherRepository {
     @Autowired
@@ -22,7 +29,10 @@ public class DataFatcherRepository {
 
 
 
-
+    /*
+     * RowMapper to convert the query result to Subject_dto
+     * Includes subject information and grade percentage (A-Fx)
+     */
     private final RowMapper<Subject_dto> SubjectsRowMapper = new RowMapper<Subject_dto>() {
         @Override
         public Subject_dto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -52,6 +62,13 @@ public class DataFatcherRepository {
         }
     };
 
+    /*
+     * Receive all items
+     *
+     * Method: used in SubjectController
+     * SQL: select from `subjects` + LEFT JOIN with `subject_evaluation`
+     * Grouping: by subject.code
+     */
     public List<Subject_dto> fetchAllSubjects() {
         String sql = "SELECT \n" +
                 "    sub.*,\n" +
@@ -83,7 +100,7 @@ public class DataFatcherRepository {
 
 
 
-
+    // RowMapper for the teacher + the subjects where he/she teaches (teacher_subject_roles)
     private final RowMapper<Teacher_dto> TeachersRowMapper = new RowMapper<Teacher_dto>() {
         @Override
         public Teacher_dto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -112,6 +129,13 @@ public class DataFatcherRepository {
     };
 
 
+    /*
+     * Receiving all teachers
+     *
+     * Method: used in TeacherController
+     * SQL: LEFT JOIN `teachers` + `teacher_subject_roles`
+     * Sorting: by tea.id
+     */
     private List<TeacherSubjectRoles> fetchSubjectsByTeacherId(String teacherId) {
         String sql = "SELECT * FROM teacher_subject_roles WHERE teacher_id = ?";
 

@@ -9,15 +9,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/*
+ * UniMap application configuration class
+ *
+ * Responsible for:
+ * - Connection to the mail server (SMTP)
+ * - Loading sensitive data from config.properties
+ * - OAuth2 settings (Google and Facebook)
+ * - Encryption (AES)
+ */
 public class AppConfig {
     @Getter
     private static final String sender = "unimapofficial@gmail.com";
+
+    // Google's SMTP server
     @Getter
     private static final String host = "smtp.gmail.com";
+    // SMTP server port
     @Getter
     private static final String port = "587";
 
     private static final Properties properties = new Properties();
+
     static {
         try (InputStream input = AppConfig.class.getResourceAsStream("/org.main.unimapapi/config.properties")
         ) {
