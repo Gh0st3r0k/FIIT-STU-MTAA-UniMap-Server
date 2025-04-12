@@ -41,6 +41,11 @@ public class SecurityConfig {
                         authorizeRequests
                                 // List all endpoints accessible without authorisation
                                 .requestMatchers(
+                                        // Swagger
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+
                                         "/",
                                         "/oauth2/**",
                                         "/login**",
