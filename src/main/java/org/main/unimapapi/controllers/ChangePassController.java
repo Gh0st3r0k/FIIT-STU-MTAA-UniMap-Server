@@ -25,7 +25,7 @@ public class ChangePassController {
         this.changePassService = changePassService;
     }
 
-    @PostMapping("/change_pass")
+    @PutMapping("/change_pass")
     public ResponseEntity<String> changePassword(@RequestBody PasswordChangeRequest request) {
         if (request == null || request.getEmail() == null || request.getNewPassword() == null) {
             return ResponseEntity.badRequest().body("Invalid request. Email and new password are required.");

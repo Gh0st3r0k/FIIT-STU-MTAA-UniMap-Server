@@ -25,7 +25,7 @@ public class ChangeAvatarController {
         this.changeAvatarService = changeAvatarService;
     }
 
-    @PostMapping("/change_avatar")
+    @PutMapping("/change_avatar")
     public ResponseEntity<String> changeAvatar(@RequestBody AvatarChangeRequest request) {
         if (request == null || request.getEmail() == null || request.getAvatarPath() == null) {
             return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");

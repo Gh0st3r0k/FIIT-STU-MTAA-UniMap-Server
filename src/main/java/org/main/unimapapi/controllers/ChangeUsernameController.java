@@ -26,7 +26,7 @@ public class ChangeUsernameController {
         this.changeUsernameService = changeUsernameService;
     }
 
-    @PostMapping("/change_username")
+    @PutMapping("/change_username")
     public ResponseEntity<String> changeAvatar(@RequestBody UsernameChangeRequest request) {
         if (request == null || request.getEmail() == null || request.getUsername() == null) {
             return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");
