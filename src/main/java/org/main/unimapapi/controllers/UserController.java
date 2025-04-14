@@ -129,6 +129,13 @@ public class UserController {
                     .build();
 
             user.setPassword(null);
+
+
+
+            String binaryAvatar = user.getAvatar();
+            int avatarNumber = Integer.parseInt(binaryAvatar, 2);
+
+            user.setAvatar(String.valueOf(avatarNumber));
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                     .body(Map.of(

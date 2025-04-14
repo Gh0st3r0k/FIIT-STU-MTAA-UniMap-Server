@@ -100,7 +100,8 @@ public class UserRepository {
     // Updating an existing user by ID
     public void update(User user) {
         String sql = "UPDATE user_data SET login = ?, email = ?, password = ?, name = ?, is_admin = ?, is_premium= ?,avatar_path = ? WHERE id = ?";
-        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(),user.isPremium(),user.getAvatar(), user.getId());
+        byte[] avatarBinary = user.getAvatar() != null ? user.getAvatar().getBytes() : null;
+        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(), user.isPremium(), avatarBinary, user.getId());
     }
 
     // Deleting a user by ID

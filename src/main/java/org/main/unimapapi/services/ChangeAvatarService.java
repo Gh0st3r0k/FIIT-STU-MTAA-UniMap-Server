@@ -19,13 +19,21 @@ public class ChangeAvatarService {
     }
 
     @Transactional
-    public boolean changeAvatar(String email, String avatarPath) {
+    public boolean changeAvatar(String email, String avatarID) {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
             return false;
         } else {
             User userEntity = user.get();
-            userEntity.setAvatar(avatarPath); // Set the avatar path
+
+            try {
+                int avatarNumber = Integer.parseInt(avatarID);
+                String binaryAvatar = Integer.toBinaryString(avatarNumber);
+                userEntity.setAvatar(binaryAvatar);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
             userRepository.update(userEntity);
             return true;
         }
