@@ -52,8 +52,13 @@ public class UserRepository {
         }
 
         String sql = "SELECT * FROM user_data WHERE email = ?";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, email);
-        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+        try {
+            List<User> users = jdbcTemplate.query(sql, userRowMapper, email);
+            return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+        } catch (Exception e) {
+            System.err.println("Error while fetching user by email: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     public Optional<User> findByLogin(String login) {
@@ -62,8 +67,13 @@ public class UserRepository {
         }
 
         String sql = "SELECT * FROM user_data WHERE login = ?";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, login);
-        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+        try {
+            List<User> users = jdbcTemplate.query(sql, userRowMapper, login);
+            return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+        } catch (Exception e) {
+            System.err.println("Error while fetching user by login: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     public Optional<User> findByUsername(String username) {

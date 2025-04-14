@@ -72,11 +72,12 @@ public class UserController {
             ServerLogger.logServer(ServerLogger.Level.INFO, "Registration attempt: username=" + username + ", email=" + email + ", login=" + login);
 
             System.out.println("TEST3");
-            if (userService.findByLogin(login).isPresent() ||
-                    userService.findByEmail(email).isPresent()) {
+            if (userService.findByLogin(login).isPresent() || userService.findByEmail(email).isPresent()) {
                  //ServerLogger.logServer(ServerLogger.Level.WARNING, "Registration failed: User already exists (login=" + login + ", email=" + email + ")");
+                System.out.println("TESTZZZ");
                 return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
+            System.out.println("TEST0");
             User user = registrationService.register(new User_dto(login,email,passwordHash,username, false, false,null));
 
             System.out.println("TEST4 "+user.getLogin()+" "+user.getEmail()+" "+user.getPassword()+" "+user.getUsername());
