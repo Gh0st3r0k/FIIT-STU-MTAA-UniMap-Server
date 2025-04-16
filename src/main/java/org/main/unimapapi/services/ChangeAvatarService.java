@@ -11,31 +11,20 @@ import java.util.Optional;
 @Service
 public class ChangeAvatarService {
 
-    private final UserRepository userRepository;
-
     @Autowired
-    public ChangeAvatarService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserRepository userRepository;
 
-    @Transactional
-    public boolean changeAvatar(String email, String avatarID) {
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isEmpty()) {
-            return false;
-        } else {
-            User userEntity = user.get();
-
-            try {
-                int avatarNumber = Integer.parseInt(avatarID);
-                String binaryAvatar = Integer.toBinaryString(avatarNumber);
-                userEntity.setAvatar(binaryAvatar);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-
-            userRepository.update(userEntity);
+    public boolean updateAvatarData(String login, byte[] avatarBinary, String fileName) {
+        Optional<User> userOptional = userRepository.findByLogin(login);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setAvatar(avatarBinary);
+            user.setAvatarFileName(fileName);
+            userRepository.update(user);
+            System.out.println("Avatar updated successfully for user: " + login);
             return true;
         }
+        System.out.println("User dontt found: " + login);
+        return false;
     }
 }

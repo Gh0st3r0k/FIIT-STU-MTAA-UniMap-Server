@@ -72,7 +72,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         userDto.setLogin(email); // email as login for OAuth users
         userDto.setPassword(null); // pass will be null
         userDto.setAdmin(false);
-        userDto.setAvatar(null);
+        userDto.setAvatarBinary(null);
 
         User user = new User();
         user.setEmail(userDto.getEmail());
@@ -80,7 +80,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         user.setLogin(userDto.getUsername());
         user.setPassword(userDto.getPassword());
         user.setAdmin(userDto.isAdmin());
-        user.setAvatar(userDto.getAvatar());
+        user.setAvatar(userDto.getAvatarBinary().getBytes());
+        user.setAvatarFileName(userDto.getAvatarFileName());
         userRepository.save(user);
         return user;
     }

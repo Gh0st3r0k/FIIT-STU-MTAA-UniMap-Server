@@ -13,8 +13,8 @@ public class TokenService {
     public String createAccessToken(User user) {
         return jwtToken.generateAccessToken(user.getLogin());
     }
-    public String createAccessToken(String username) {
-        return jwtToken.generateAccessToken(username);
+    public String createAccessToken(String login) {
+        return jwtToken.generateAccessToken(login);
     }
 
     public boolean validateAccessToken(String accessToken, User user) {

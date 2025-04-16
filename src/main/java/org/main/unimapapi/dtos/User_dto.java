@@ -31,6 +31,7 @@ public class User_dto {
 
     private boolean isAdmin;
     private boolean isPremium;
-    private String avatar;
+    private String avatarBinary;
+    private String avatarFileName;
 
 }

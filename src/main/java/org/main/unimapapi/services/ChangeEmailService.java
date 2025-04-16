@@ -25,7 +25,7 @@ public class ChangeEmailService {
             return false;
         } else {
             User userEntity = user.get();
-            userEntity.setEmail(new_email); // Set the avatar path
+            userEntity.setEmail(new_email);
             userRepository.update(userEntity);
             return true;
         }

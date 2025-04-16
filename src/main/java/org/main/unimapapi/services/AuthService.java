@@ -14,22 +14,30 @@ import java.util.Optional;
 public class AuthService {
     private final UserRepository userRepository;
 
-    public User authenticate(String login, String password) throws Exception {
-        Optional<User> user = userRepository.findByLogin(login);
-        Optional<User> user2 = userRepository.findByEmail(login);
-        if (user.isPresent()) {
-            if (Hashing.checkPassword(password, user.get().getPassword())) {
-                return user.get();
-            }
-            ServerLogger.logServer(ServerLogger.Level.WARNING, "Password mismatch!"+ Hashing.hashPassword(password));
+    public User authenticate(String login, String password) {
+        try {
+            Optional<User> user = userRepository.findByLogin(login);
+            Optional<User> user2 = userRepository.findByEmail(login);
 
-            return null;
-        } else if (user2.isPresent()) {
-            if (Hashing.checkPassword(password, user2.get().getPassword())) {
-                return user2.get();
+            if (user.isPresent()) {
+                if (Hashing.checkPassword(password, user.get().getPassword())) {
+                    return user.get();
+                }
+             //   System.out.println("Password mismatch!" + Hashing.hashPassword(password));
+                ServerLogger.logServer(ServerLogger.Level.WARNING, "Password mismatch!" + Hashing.hashPassword(password));
+                return null;
+            } else if (user2.isPresent()) {
+                if (Hashing.checkPassword(password, user2.get().getPassword())) {
+                    return user2.get();
+                }
             }
+        //    System.out.println("User not found!");
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "User not found!");
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error during authentication: " + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error during authentication: " + e.getMessage());
+            return null;
         }
-        ServerLogger.logServer(ServerLogger.Level.WARNING, "User not found!");
-        return null;
     }
 }

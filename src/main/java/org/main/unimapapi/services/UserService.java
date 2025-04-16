@@ -22,7 +22,8 @@ public class UserService {
         user.setUsername(dto.getUsername());
         user.setAdmin(dto.isAdmin());
         user.setPremium(dto.isPremium());
-        user.setAvatar(dto.getAvatar());
+        user.setAvatar(dto.getAvatarBinary().getBytes());
+        user.setAvatarFileName(dto.getAvatarFileName());
         userRepository.save(user);
         return user;
     }

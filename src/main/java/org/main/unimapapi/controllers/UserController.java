@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseCookie;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -78,9 +80,10 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
             System.out.println("TEST0");
-            User user = registrationService.register(new User_dto(login,email,passwordHash,username, false, false,null));
 
-            System.out.println("TEST4 "+user.getLogin()+" "+user.getEmail()+" "+user.getPassword()+" "+user.getUsername());
+
+            User_dto user_dto = new User_dto(login, email, passwordHash, username, false, false, null, null);
+            User user = registrationService.register(user_dto);
 
             if (user == null) {
                 ServerLogger.logServer(ServerLogger.Level.ERROR, "Registration failed: User object is null.");
@@ -129,18 +132,18 @@ public class UserController {
                     .build();
 
             user.setPassword(null);
+            if(user.getAvatar() == null) {
+                user.setAvatar("null".getBytes());
+            }
 
 
-
-            String binaryAvatar = user.getAvatar();
-            int avatarNumber = Integer.parseInt(binaryAvatar, 2);
-
-            user.setAvatar(String.valueOf(avatarNumber));
+       //     System.out.println("TEST User info: " + user.getId() + " " + user.getLogin() + " " + user.getEmail() + " " + user.getUsername() + " " + user.isAdmin() + " " + user.isPremium() + " " + user.getAvatarFileName() + " " + Arrays.toString(user.getAvatar()));
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                     .body(Map.of(
                             "user", user,
                             "accessToken", accessToken
+                          //  "avatar", base64Avatar
                     ));
         } catch (Exception e) {
             ServerLogger.logServer(ServerLogger.Level.ERROR,

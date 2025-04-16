@@ -1,9 +1,8 @@
 package org.main.unimapapi.dtos;
 
 public class AvatarChangeRequest {
-
     private String email;
-    private String avatarPath;
+    private byte[] avatarBinary;
 
     public String getEmail() {
         return email;
@@ -13,11 +12,11 @@ public class AvatarChangeRequest {
         this.email = email;
     }
 
-    public String getAvatarPath() {
-        return avatarPath;
+    public byte[] getAvatarBinary() {
+        return avatarBinary;
     }
 
-    public void setAvatarPath(String avatarPath) {
-        this.avatarPath = avatarPath;
+    public void setAvatarBinary(byte[] avatarBinary) {
+        this.avatarBinary = avatarBinary;
     }
 }

@@ -35,7 +35,8 @@ public class UserRepository {
             user.setUsername(rs.getString("name"));
             user.setAdmin(rs.getBoolean("is_admin"));
             user.setPremium(rs.getBoolean("is_premium"));
-            user.setAvatar(rs.getString("avatar_path"));
+            user.setAvatar(rs.getBytes("avatar"));
+            user.setAvatarFileName(rs.getString("avatar_file_name"));
             return user;
         }
     };
@@ -91,17 +92,22 @@ public class UserRepository {
         return jdbcTemplate.query(sql, userRowMapper);
     }
 
-    // Saving a new user
-    public void save(User user) {
-        String sql = "INSERT INTO user_data (login, email, password, name, is_admin,is_premium,avatar_path) VALUES (?, ?, ?, ?,?, ?, ?)";
-        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(),user.isPremium(), user.getAvatar());
+    public boolean save(User user) {
+        Optional<User> existingUser = findByLogin(user.getLogin());
+        if (existingUser.isPresent()) {
+            return false;
+        }
+        String sql = "INSERT INTO user_data (login, email, password, name, is_admin, is_premium, avatar, avatar_file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(), user.isPremium(), user.getAvatar(), user.getAvatarFileName());
+        return true;
     }
 
-    // Updating an existing user by ID
     public void update(User user) {
-        String sql = "UPDATE user_data SET login = ?, email = ?, password = ?, name = ?, is_admin = ?, is_premium= ?,avatar_path = ? WHERE id = ?";
-        byte[] avatarBinary = user.getAvatar() != null ? user.getAvatar().getBytes() : null;
-        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(), user.isPremium(), avatarBinary, user.getId());
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
+        String sql = "UPDATE user_data SET login = ?, email = ?, password = ?, name = ?, is_admin = ?, is_premium = ?, avatar = ?, avatar_file_name = ? WHERE id = ?";
+        jdbcTemplate.update(sql, user.getLogin(), user.getEmail(), user.getPassword(), user.getUsername(), user.isAdmin(), user.isPremium(), user.getAvatar(), user.getAvatarFileName(), user.getId());
     }
 
     // Deleting a user by ID

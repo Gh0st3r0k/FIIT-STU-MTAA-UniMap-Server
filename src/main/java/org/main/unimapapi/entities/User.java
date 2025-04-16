@@ -18,6 +18,6 @@ public class User {
     private String username;
     private boolean isAdmin;
     private boolean isPremium;
-    private String avatar;
-    private List<TokenEntity> tokens;
+    private byte[] avatar;
+    private String avatarFileName;
 }
