@@ -34,7 +34,6 @@ public class ChangeAvatarController {
     @PutMapping(value = "/change_avatar")
     public ResponseEntity<String> changeAvatar(
             @RequestHeader("Authorization") String authorizationHeader,
-            @RequestHeader("Content-Type") String contentType,
             @RequestBody byte[] avatarData,
             @RequestParam("fileName") String fileName) {
 
