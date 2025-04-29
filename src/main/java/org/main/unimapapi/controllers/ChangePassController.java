@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
  * Controller for processing user password change requests
  *
  * URL prefix: /api/unimap_pc
- * Method: POST
+ * Method: PUT
  * Endpoint: /change_pass
  */
 @RestController

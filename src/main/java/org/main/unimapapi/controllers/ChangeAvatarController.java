@@ -1,5 +1,6 @@
 package org.main.unimapapi.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.main.unimapapi.services.ChangeAvatarService;
 import org.main.unimapapi.utils.JwtToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /*
  * Controller for handling requests to change user avatar
@@ -31,7 +32,9 @@ public class ChangeAvatarController {
         this.changeAvatarService = changeAvatarService;
     }
 
-    @PutMapping(value = "/change_avatar")
+    @Operation(summary = "Upload a file",
+            description = "Uploads a file with content type application/octet-stream")
+    @PutMapping(value = "/change_avatar", consumes = {"application/octet-stream", "image/png", "image/jpeg", "image/gif"})
     public ResponseEntity<String> changeAvatar(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestBody byte[] avatarData,
@@ -41,7 +44,6 @@ public class ChangeAvatarController {
             String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
 
             if (avatarData == null || avatarData.length == 0 || decodedFileName == null || decodedFileName.isBlank()) {
-           //     System.out.println("Invalid request. Avatar data and file name are required.");
                 return ResponseEntity.badRequest().body("Invalid request. Avatar data and file name are required.");
             }
 
@@ -53,15 +55,11 @@ public class ChangeAvatarController {
             String login = jwtToken.extractUsernameFromAccessToken(token);
 
             boolean avatarUpdated = changeAvatarService.updateAvatarData(login, avatarData, decodedFileName);
+            System.out.println("Avatar DATAA: " + Arrays.toString(avatarData));
 
             if (avatarUpdated) {
-           //     System.out.println("Avatar updated successfully for user: " + login);
-            //    System.out.println("File name: " + decodedFileName);
-            //    System.out.println("Avatar size: " + avatarData.length + " bytes");
-
                 return ResponseEntity.ok("Avatar updated successfully.");
             } else {
-                System.out.println("Failed to update avatar. User not found: " + login);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }
         } catch (Exception e) {
