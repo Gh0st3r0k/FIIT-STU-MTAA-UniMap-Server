@@ -11,29 +11,31 @@ public class TokenService {
     private final JwtToken jwtToken;
 
     public String createAccessToken(User user) {
-        return jwtToken.generateAccessToken(user.getLogin());
+        return createAccessToken(user.getLogin());
     }
+
     public String createAccessToken(String login) {
         return jwtToken.generateAccessToken(login);
     }
 
     public boolean validateAccessToken(String accessToken, User user) {
-        return jwtToken.validateAccessToken(accessToken, user.getUsername());
+        return validateAccessToken(accessToken, user.getUsername());
     }
+
     public boolean validateAccessToken(String accessToken, String username) {
         return jwtToken.validateAccessToken(accessToken, username);
     }
 
-
     public String getLoginFromRefreshToken(String refreshToken) {
         return jwtToken.extractUsernameFromRefreshToken(refreshToken);
     }
+
     public String getLoginFromAccessToken(String accessToken) {
         return jwtToken.extractUsernameFromAccessToken(accessToken);
     }
 
     public boolean validateRefreshToken(String refreshToken) {
-        String username = jwtToken.extractUsernameFromRefreshToken(refreshToken);
+        String username = getLoginFromRefreshToken(refreshToken);
         return jwtToken.validateRefreshToken(refreshToken, username);
     }
 }

@@ -1,29 +1,34 @@
 package org.main.unimapapi.services;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.main.unimapapi.dtos.User_dto;
 import org.main.unimapapi.entities.User;
 import org.main.unimapapi.repository_queries.UserRepository;
+import org.main.unimapapi.utils.Hashing;
+import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
 
     public User create(User_dto dto) {
-        User user = new User();
-        user.setLogin(dto.getLogin());
-        user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
-        user.setUsername(dto.getUsername());
-        user.setAdmin(dto.isAdmin());
-        user.setPremium(dto.isPremium());
-        user.setAvatar(dto.getAvatarBinary().getBytes());
-        user.setAvatarFileName(dto.getAvatarFileName());
+        User user = User.builder()
+                .login(dto.getLogin())
+                .email(dto.getEmail())
+                .password(dto.getPassword())
+                .username(dto.getUsername())
+                .isAdmin(dto.isAdmin())
+                .isPremium(dto.isPremium())
+                .avatar(dto.getAvatarBinary() != null ? dto.getAvatarBinary().getBytes() : null)
+                .avatarFileName(dto.getAvatarFileName())
+                .build();
+
         userRepository.save(user);
         return user;
     }
@@ -53,11 +58,56 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public void delete_all_user_info(Long id) {
+    public void deleteAllUserInfo(Long id) {
         userRepository.deleteAllUserInfo(id);
     }
-    public void delete_all_user_comments(Long id) {
+
+    public void deleteAllUserComments(Long id) {
         userRepository.deleteAllUserComments(id);
     }
 
+    public boolean updateAvatarData(String login, byte[] avatarBinary, String fileName) {
+        return updateUserProperty(login, user -> {
+            user.setAvatar(avatarBinary);
+            user.setAvatarFileName(fileName);
+            ServerLogger.logServer(ServerLogger.Level.INFO, "Avatar updated successfully for user: " + login);
+        });
+    }
+
+    public boolean changeEmail(String login, String newEmail) {
+        return updateUserProperty(login, user -> user.setEmail(newEmail));
+    }
+
+    public boolean changePassword(String email, String newPassword) {
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setPassword(Hashing.hashPassword(newPassword));
+                    userRepository.update(user);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    public boolean changeUsername(String email, String newUsername) {
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setUsername(newUsername);
+                    userRepository.update(user);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    private boolean updateUserProperty(String login, java.util.function.Consumer<User> updater) {
+        return userRepository.findByLogin(login)
+                .map(user -> {
+                    updater.accept(user);
+                    userRepository.update(user);
+                    return true;
+                })
+                .orElseGet(() -> {
+                    ServerLogger.logServer(ServerLogger.Level.WARNING, "User not found!");
+                    return false;
+                });
+    }
 }

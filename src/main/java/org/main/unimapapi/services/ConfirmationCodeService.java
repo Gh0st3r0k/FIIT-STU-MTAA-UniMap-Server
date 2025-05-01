@@ -2,21 +2,20 @@ package org.main.unimapapi.services;
 
 import org.main.unimapapi.entities.ConfirmationCode;
 import org.main.unimapapi.repository_queries.ConfirmationCodeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class ConfirmationCodeService {
-    @Autowired
-    private ConfirmationCodeRepository confirmationCodeRepository;
+    private final ConfirmationCodeRepository confirmationCodeRepository;
 
     public void save(ConfirmationCode confirmationCode) {
         confirmationCodeRepository.save(confirmationCode);
     }
-
 
     public static String generateRandomCode() {
         Random random = new Random();
@@ -27,17 +26,20 @@ public class ConfirmationCodeService {
         return code.toString();
     }
 
+
     public boolean validateConfirmationCode(Long userId, String code) {
         try {
-            System.out.println("VALIDATE CONFIRMATION CODE "+userId+" "+code);
-            if (confirmationCodeRepository.find(userId,code)) {
-                confirmationCodeRepository.deleteByUserId(userId,code);
+            ServerLogger.logServer(ServerLogger.Level.INFO, "VALIDATE CONFIRMATION CODE "+userId+" "+code);
+            if (confirmationCodeRepository.find(userId, code)) {
+                confirmationCodeRepository.deleteByUserId(userId, code);
                 return true;
             }
             return false;
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error during confirmation code validation: " + e.getMessage());
             return false;
         }
     }
+
+
 }

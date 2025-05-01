@@ -43,10 +43,6 @@ public class UserController {
     private final JwtToken jwtToken;
     private final TokenService tokenService;
     private final ConfirmationCodeService confirmationCodeService;
-    private final ChangeAvatarService changeAvatarService;
-    private final ChangeEmailService changeEmailService;
-    private final ChangePassService changePassService;
-    private final ChangeUsernameService changeUsernameService;
     private final EmailSender emailSender;
 
     /*
@@ -267,7 +263,7 @@ public class UserController {
             }
 
         //    System.out.println("I have delete userdata request in id: "+userId);
-            userService.delete_all_user_info(Long.parseLong(userId));
+            userService.deleteAllUserInfo(Long.parseLong(userId));
             return ResponseEntity.ok(true);
         } catch (Exception e) {
             ServerLogger.logServer(ServerLogger.Level.ERROR,"Delete user data failed | Error: " + e.getMessage());
@@ -291,7 +287,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            userService.delete_all_user_comments(Long.parseLong(userId));
+            userService.deleteAllUserComments(Long.parseLong(userId));
             return ResponseEntity.ok(true);
         } catch (Exception e) {
           //  e.printStackTrace();
@@ -325,7 +321,7 @@ public class UserController {
 
             String login = jwtToken.extractUsernameFromAccessToken(token);
 
-            boolean avatarUpdated = changeAvatarService.updateAvatarData(login, avatarData, decodedFileName);
+            boolean avatarUpdated = userService.updateAvatarData(login, avatarData, decodedFileName);
         //    System.out.println("Avatar DATAA: " + Arrays.toString(avatarData));
 
             if (avatarUpdated) {
@@ -348,7 +344,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");
         }
 
-        boolean emailChanged = changeEmailService.changeEmail(request.getLogin(), request.getEmail());
+        boolean emailChanged = userService.changeEmail(request.getLogin(), request.getEmail());
 
         if (emailChanged) {
             return ResponseEntity.ok("Email changed successfully.");
@@ -363,7 +359,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid request. Email and new password are required.");
         }
 
-        boolean passwordChanged = changePassService.changePassword(request.getEmail(), request.getNewPassword());
+        boolean passwordChanged = userService.changePassword(request.getEmail(), request.getNewPassword());
 
         if (passwordChanged) {
             return ResponseEntity.ok("Password changed successfully.");
@@ -378,7 +374,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");
         }
 
-        boolean avatarChanged = changeUsernameService.changeUsername(request.getEmail(), request.getUsername());
+        boolean avatarChanged = userService.changeUsername(request.getEmail(), request.getUsername());
 
         if (avatarChanged) {
             return ResponseEntity.ok("Avatar changed successfully.");

@@ -1,21 +1,20 @@
 package org.main.unimapapi.services;
 
+import lombok.RequiredArgsConstructor;
 import org.main.unimapapi.dtos.User_dto;
 import org.main.unimapapi.entities.User;
 import org.main.unimapapi.repository_queries.UserRepository;
+import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
 @Service
+@RequiredArgsConstructor
 public class RegistrationService {
     private final UserRepository userRepository;
 
-    @Autowired
-    public RegistrationService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public User register(User_dto dto) {
         try {
@@ -33,6 +32,7 @@ public class RegistrationService {
             userRepository.save(user);
             return user;
         } catch (Exception e) {
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error during user registration: " + e.getMessage());
             throw new RuntimeException("Error during user registration: " + e.getMessage(), e);
         }
     }
