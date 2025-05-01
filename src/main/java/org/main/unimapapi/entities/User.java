@@ -1,15 +1,14 @@
 package org.main.unimapapi.entities;
 
-import lombok.*;
-
-import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Builder
 public class User {
     private Long id;
     private String login;
