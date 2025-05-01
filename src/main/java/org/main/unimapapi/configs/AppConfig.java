@@ -1,9 +1,11 @@
 package org.main.unimapapi.configs;
 
 
+import lombok.Data;
 import lombok.Getter;
 import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,8 @@ import java.util.Properties;
  * - OAuth2 settings (Google and Facebook)
  * - Encryption (AES)
  */
+@Configuration
+@Data
 public class AppConfig {
     @Getter
     private static final String sender = "unimapofficial@gmail.com";
@@ -71,36 +75,28 @@ public class AppConfig {
     }
 
     @Getter
-    @Value("${oauth2-id-google}")
-    private String oauth2GoogleId;
+    private static final String Oauth2Google_id = "test";
+    @Getter
+    private static final String Oauth2Google_secret = "test";
 
     @Getter
-    @Value("${oauth2-secret-google}")
-    private String oauth2GoogleSecret;
+    private static final String Oauth2Facebook_id = "test";
+    @Getter
+    private static final String Oauth2Facebook_secret = "test";
 
     @Getter
-    @Value("${oauth2-id-facebook}")
-    private String oauth2FacebookId;
+    private static final long EXPIRATION_TIME_ACCESS = 60000;
 
     @Getter
-    @Value("${oauth2-secret-facebook}")
-    private String oauth2FacebookSecret;
+    private static final long EXPIRATION_TIME_REFRESH = 86400000;
 
-    public static String getOauth2Google_secret() {
-        return properties.getProperty("oauth2-secret-google");
-    }
-    public static String getOauth2Google_id() {
-        return properties.getProperty("oauth2-id-google");
-    }
-
-    public static String getOauth2Facebook_secret() {
-        return properties.getProperty("oauth2-secret-facebook");
-    }
-    public static String getOauth2Facebook_id() {
-        return properties.getProperty("oauth2-id-facebook");
-    }
     public static String getLogLevel() {
         return properties.getProperty("LOG_LEVEL", "INFO");
     }
+
+    @Getter
+    private static final String SERVER_LOG_FILE = "src/main/resources/org.main.unimapapi/logs/server_logs.xml";
+    @Getter
+    private static final String CLIENT_LOG_FILE = "src/main/resources/org.main.unimapapi/logs/client_logs.xml";
 
 }

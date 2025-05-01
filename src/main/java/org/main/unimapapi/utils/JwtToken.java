@@ -1,137 +1,122 @@
 package org.main.unimapapi.utils;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import lombok.Builder;
+import java.security.Key;
+import java.util.Date;
+import lombok.RequiredArgsConstructor;
 import org.main.unimapapi.configs.AppConfig;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.Key;
-import java.util.Date;
+import javax.annotation.PostConstruct;
 
-/*
- * Utility for generating, parsing and validating JWT tokens
- *
- * Used for:
- * - Authorisation and authentication (access / refresh tokens)
- * - User validation by token
- * - Built in TokenService
- *
- * Uses secret keys from AppConfig:
- * - ACCESS_SECRET_KEY (short lived token)
- * - REFRESH_SECRET_KEY (long-lived token)
- */
-@Builder
 @Component
+@RequiredArgsConstructor
 public class JwtToken {
-    private static final String ACCESS_SECRET_KEY = AppConfig.getAccessKey();
-    private static final String REFRESH_SECRET_KEY = AppConfig.getRefreshKey();
+    private final long EXPIRATION_TIME_ACCESS = AppConfig.getEXPIRATION_TIME_ACCESS();
+    private final long EXPIRATION_TIME_REFRESH = AppConfig.getEXPIRATION_TIME_REFRESH();
 
-    private static final long EXPIRATION_TIME_ACCESS = 60000; // 1 min
-    private static final long EXPIRATION_TIME_REFRESH = 86400000; // 1 day
+    private Key accessSigningKey;
+    private Key refreshSigningKey;
 
-    private Key getAccessSigningKey() {
-        return Keys.hmacShaKeyFor(ACCESS_SECRET_KEY.getBytes());
+    @PostConstruct
+    public void init() {
+        accessSigningKey = Keys.hmacShaKeyFor(AppConfig.getAccessKey().getBytes());
+        refreshSigningKey = Keys.hmacShaKeyFor(AppConfig.getRefreshKey().getBytes());
     }
-    private Key getRefreshSigningKey() {
-        return Keys.hmacShaKeyFor(REFRESH_SECRET_KEY.getBytes());
-    }
 
-    // Generates an access token for 1 minute
+
     public String generateAccessToken(String login) {
         return Jwts.builder()
                 .setSubject(login)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_ACCESS))
-                .signWith(getAccessSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(accessSigningKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Generates a refresh token for 1 day
+
     public String generateRefreshToken(String login) {
         return Jwts.builder()
                 .setSubject(login)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME_REFRESH))
-                .signWith(getRefreshSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(refreshSigningKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Extracts the login from the access token
+
     public String extractUsernameFromAccessToken(String token) {
         try {
-            return extractClaims(token, getAccessSigningKey()).getSubject();
+            return extractClaims(token, accessSigningKey).getSubject();
         } catch (JwtException e) {
-            ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid access token: "
-                    + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid access token: " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid access token");
         }
     }
 
-    // Retrieves the login from the refresh token
+
     public String extractUsernameFromRefreshToken(String token) {
         try {
-            return extractClaims(token, getRefreshSigningKey()).getSubject();
+            return extractClaims(token, refreshSigningKey).getSubject();
         } catch (JwtException e) {
-            ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid refresh token: "
-                    + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid refresh token: " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
         }
     }
 
-
     private Claims extractClaims(String token, Key key) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    // Checks access token by login (subject + not expired)
+
     public boolean validateAccessToken(String token, String username) {
         try {
-            Claims claims = extractClaims(token, getAccessSigningKey());
+            Claims claims = extractClaims(token, accessSigningKey);
             return claims.getSubject().equals(username) &&
                     !claims.getExpiration().before(new Date());
         } catch (JwtException e) {
-            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error validating access token for user: "
-                    + username + ". Error: " + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "Error validating access token for user " + username + ": " + e.getMessage());
             return false;
         }
     }
 
 
-    // Checks the access token against the extracted subject
     public boolean validateAccessToken(String token) {
-        String username = extractUsernameFromAccessToken(token);
         try {
-            Claims claims = extractClaims(token, getAccessSigningKey());
+            String username = extractUsernameFromAccessToken(token);
+            Claims claims = extractClaims(token, accessSigningKey);
             return claims.getSubject().equals(username) &&
                     !claims.getExpiration().before(new Date());
         } catch (JwtException e) {
-            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error validating access token for user: "
-                    + username + ". Error: " + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "Error validating access token: " + e.getMessage());
             return false;
         }
     }
 
-    // Checks refresh token (by login and expiry date)
+
     public boolean validateRefreshToken(String token, String username) {
         try {
-            Claims claims = extractClaims(token, getRefreshSigningKey());
+            Claims claims = extractClaims(token, refreshSigningKey);
             return claims.getSubject().equals(username) &&
                     !claims.getExpiration().before(new Date());
         } catch (JwtException e) {
-            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error validating refresh token for user: "
-                    + username + ". Error: " + e.getMessage());
+            ServerLogger.logServer(ServerLogger.Level.WARNING, "Error validating refresh token for user " + username + ": " + e.getMessage());
             return false;
         }
     }
 
+
     public Date extractExpiration(String token) {
-        return extractClaims(token, getRefreshSigningKey()).getExpiration();
+        return extractClaims(token, refreshSigningKey).getExpiration();
     }
 }

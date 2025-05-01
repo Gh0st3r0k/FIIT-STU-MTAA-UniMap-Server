@@ -47,6 +47,7 @@ public class UserController {
     private final ChangeEmailService changeEmailService;
     private final ChangePassService changePassService;
     private final ChangeUsernameService changeUsernameService;
+    private final EmailSender emailSender;
 
     /*
      * Method: POST
@@ -172,8 +173,7 @@ public class UserController {
                 String confirmationCode = ConfirmationCodeService.generateRandomCode();                LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
                 ConfirmationCode confirmationCodeEntity = new ConfirmationCode(user.get().getId(), confirmationCode, expirationTime);
                 confirmationCodeService.save(confirmationCodeEntity);
-                EmailSender.sendEmail(email, confirmationCode);
-                return ResponseEntity.ok().build();
+                emailSender.sendVerificationCode(email, confirmationCode);                return ResponseEntity.ok().build();
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }

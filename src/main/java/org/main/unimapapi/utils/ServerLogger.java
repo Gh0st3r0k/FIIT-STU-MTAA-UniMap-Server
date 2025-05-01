@@ -17,8 +17,8 @@ public class ServerLogger {
         INFO, WARNING, ERROR
     }
 
-    private static final String SERVER_LOG_FILE = "src/main/resources/org.main.unimapapi/logs/server_logs.xml";
-    private static final String CLIENT_LOG_FILE = "src/main/resources/org.main.unimapapi/logs/client_logs.xml";
+    private static final String SERVER_LOG_FILE = AppConfig.getSERVER_LOG_FILE();
+    private static final String CLIENT_LOG_FILE = AppConfig.getCLIENT_LOG_FILE();
     private static final Level CONFIGURED_LEVEL = Level.valueOf(AppConfig.getLogLevel().toUpperCase());
 
     public static void logServer(Level level, String message) {

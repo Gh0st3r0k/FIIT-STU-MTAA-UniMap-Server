@@ -1,59 +1,81 @@
 package org.main.unimapapi.utils;
 
-import java.util.Properties;
+import lombok.RequiredArgsConstructor;
+import org.main.unimapapi.configs.AppConfig;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.internet.*;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import org.main.unimapapi.configs.AppConfig;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
 
+/**
+ * Service for sending emails asynchronously
+ */
+@Service
+@RequiredArgsConstructor
 public class EmailSender {
 
-    public static void sendEmail(String recipient, String code) {
-        Runnable emailTask = () -> {
+    @Async
+    public void sendVerificationCode(String recipient, String code) {
+        String sender = AppConfig.getSender();
+        String host = AppConfig.getHost();
+        String port = AppConfig.getPort();
+        String password = AppConfig.getPassword();
 
-            String sender = AppConfig.getSender();
-            String host = AppConfig.getHost();
-            String port = AppConfig.getPort();
+        Properties properties = createMailProperties(host, port);
+        Session session = createMailSession(sender, password, properties);
 
-            Properties properties = System.getProperties();
-            properties.setProperty("mail.smtp.host", host);
-            properties.setProperty("mail.smtp.port", port);
-            properties.setProperty("mail.smtp.auth", "true");
-            properties.setProperty("mail.smtp.starttls.enable", "true");
+        try {
+            MimeMessage message = createMessage(session, sender, recipient, code);
+            Transport.send(message);
+            ServerLogger.logServer(ServerLogger.Level.INFO, String.format("Verification code sent to %s", recipient));
+        } catch (MessagingException mex) {
+            ServerLogger.logServer(ServerLogger.Level.ERROR, String.format("Failed to send verification code to %s: %s", recipient, mex.getMessage()));
+        }
+    }
 
-            Session session = Session.getDefaultInstance(properties, new javax.mail.Authenticator() {
-                protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                    return new javax.mail.PasswordAuthentication(sender, AppConfig.getPassword());
-                }
-            });
+    private Properties createMailProperties(String host, String port) {
+        Properties properties = new Properties();
+        properties.setProperty("mail.smtp.host", host);
+        properties.setProperty("mail.smtp.port", port);
+        properties.setProperty("mail.smtp.auth", "true");
+        properties.setProperty("mail.smtp.starttls.enable", "true");
+        return properties;
+    }
 
-            try {
-                // MimeMessage object.
-                MimeMessage message = new MimeMessage(session);
-
-                // Set From Field: adding senders email to from field.
-                message.setFrom(new InternetAddress(sender));
-
-                // Set To Field: adding recipient's email to from field.
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
-
-                // Set Subject: subject of the email
-                message.setSubject("UniMap Confirmation Code");
-
-                // set body of the email.
-                message.setText("Hi, your confirmation code is: " + code + "\n\n" +
-                        "This code will expire in 5 minute!" + "\n\n" + "Best regards, UniMap Team");
-
-                // Send email.
-                Transport.send(message);
-                System.out.println("Mail successfully sent");
-            } catch (MessagingException mex) {
-                ServerLogger.logServer(ServerLogger.Level.ERROR, "Failed to send email to " + recipient + ": " + mex.getMessage());
+    private Session createMailSession(String sender, String password, Properties properties) {
+        return Session.getInstance(properties, new javax.mail.Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(sender, password);
             }
-        };
-        Thread emailThread = new Thread(emailTask);
-        emailThread.start();
+        });
+    }
+
+    private MimeMessage createMessage(Session session, String sender, String recipient, String code)
+            throws MessagingException {
+        MimeMessage message = new MimeMessage(session);
+
+        message.setFrom(new InternetAddress(sender));
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+        message.setSubject("UniMap Confirmation Code");
+
+        String emailBody = String.format(
+                """
+                        Hi, your confirmation code is: %s
+                        
+                        This code will expire in 5 minutes!
+                        
+                        Best regards, UniMap Team""",
+                code);
+
+        message.setText(emailBody);
+        return message;
     }
 }
