@@ -1,16 +1,13 @@
 package org.main.unimapapi.dtos;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class Evaluation {
     private String grade;
     private Integer percentage;
-
 }

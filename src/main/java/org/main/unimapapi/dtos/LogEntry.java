@@ -1,13 +1,13 @@
 package org.main.unimapapi.dtos;
 
-public class LogEntry {
-    private int userId;
-    private String timestamp;
-    private String level;
-    private String message;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-    public int getUserId() { return userId; }
-    public String getTimestamp() { return timestamp; }
-    public String getLevel() { return level; }
-    public String getMessage() { return message; }
+@Getter
+@RequiredArgsConstructor
+public class LogEntry {
+    private final int userId;
+    private final String timestamp;
+    private final String level;
+    private final String message;
 }

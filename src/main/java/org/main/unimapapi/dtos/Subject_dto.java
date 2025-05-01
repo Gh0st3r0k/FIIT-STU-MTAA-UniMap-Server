@@ -1,14 +1,16 @@
 package org.main.unimapapi.dtos;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class Subject_dto {
     private String code;
     private String name;
@@ -32,6 +34,4 @@ public class Subject_dto {
     private String dscore;
     private String escore;
     private String FXscore;
-
-
 }
