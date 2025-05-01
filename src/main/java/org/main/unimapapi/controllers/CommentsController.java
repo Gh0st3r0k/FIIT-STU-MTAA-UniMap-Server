@@ -1,9 +1,9 @@
 package org.main.unimapapi.controllers;
 
 import org.main.unimapapi.repository_queries.CommentsRepository;
-import lombok.RequiredArgsConstructor;
 import org.main.unimapapi.dtos.Comment_dto;
 import org.main.unimapapi.services.TokenService;
+import org.main.unimapapi.utils.ServerLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +41,8 @@ public class CommentsController {
             List<Comment_dto> subjectsList = commentsRepository.getAllSubjectsComments(subjectId);
             return ResponseEntity.ok(subjectsList);
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error fetching comments for subject: " + subjectId);
+           // e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -56,7 +57,8 @@ public class CommentsController {
             List<Comment_dto> teachersList = commentsRepository.getAllTeachersComments(teacherId);
             return ResponseEntity.ok(teachersList);
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error fetching comments for teacher: " + teacherId);
+        //    e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
@@ -85,7 +87,8 @@ public class CommentsController {
 
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error adding new subject comment: " + e.getMessage());
+          //  e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -114,7 +117,8 @@ public class CommentsController {
 
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error adding new teacher comment: " + e.getMessage());
+          //  e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -129,7 +133,8 @@ public class CommentsController {
             commentsRepository.deleteSubjectComment(commentId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error deleting subject comment: " + e.getMessage());
+          //  e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -144,7 +149,8 @@ public class CommentsController {
             commentsRepository.deleteTeacherComment(commentId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error deleting teacher comment: " + e.getMessage());
+        //    e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

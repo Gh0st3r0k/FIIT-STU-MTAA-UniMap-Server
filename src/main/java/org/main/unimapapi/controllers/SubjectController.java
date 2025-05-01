@@ -34,17 +34,18 @@ public class SubjectController {
     public ResponseEntity<?> getAllSubjects(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
             String token = authorizationHeader.replace("Bearer ", "");
-            System.out.println("Subject token "+token);
+         //   System.out.println("Subject token "+token);
 
             if (!jwtToken.validateAccessToken(token)) {
-                System.out.println("Unauthorized teacher token "+token);
+             //   System.out.println("Unauthorized teacher token "+token);
+                ServerLogger.logServer(ServerLogger.Level.ERROR, "Unauthorized teacher token: " + token);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            System.out.println("Fetching subjects...");
+          //  System.out.println("Fetching subjects...");
 
             Map<String, Object> response = new HashMap<>();
             response.put("subjects", dataFatcherRepository.fetchAllSubjects());
-            System.out.println("ODOSLAL SOM "+response);
+          //  System.out.println("ODOSLAL SOM "+response);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

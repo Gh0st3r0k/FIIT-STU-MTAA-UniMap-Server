@@ -25,7 +25,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/unimap_pc/news")
 public class NewsController {
-
     private final NewsRepository newsRepository;
 
     @GetMapping("/all")
@@ -36,7 +35,7 @@ public class NewsController {
 
             return ResponseEntity.ok(newsList);
         } catch (Exception e) {
-            System.out.println("Error fetching news: " + e.getMessage());
+           // System.out.println("Error fetching news: " + e.getMessage());
             ServerLogger.logServer(ServerLogger.Level.ERROR, "Error fetching news: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

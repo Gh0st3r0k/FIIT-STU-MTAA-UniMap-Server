@@ -20,12 +20,8 @@ import java.time.LocalDateTime;
 public class CheckConnectionController {
     @GetMapping("/check-connection")
     public ResponseEntity<ServerConnection_dto> checkConnection() {
-        ServerConnection_dto status = new ServerConnection_dto(
-                "UP",
-                LocalDateTime.now().toString()
-        );
+        ServerConnection_dto status = new ServerConnection_dto("UP", LocalDateTime.now().toString());
         ServerLogger.logServer(ServerLogger.Level.INFO, "Response sent: " + status);
-        //System.out.println("Response sent: " + status);
         return ResponseEntity.ok(status);
     }
 }

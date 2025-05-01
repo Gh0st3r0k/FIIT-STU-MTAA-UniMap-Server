@@ -2,8 +2,12 @@ package org.main.unimapapi.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.main.unimapapi.dtos.EmailChangeRequest;
+import org.main.unimapapi.dtos.PasswordChangeRequest;
 import org.main.unimapapi.dtos.User_dto;
+import org.main.unimapapi.dtos.UsernameChangeRequest;
 import org.main.unimapapi.entities.ConfirmationCode;
 import org.main.unimapapi.entities.User;
 import org.main.unimapapi.services.*;
@@ -11,16 +15,15 @@ import org.main.unimapapi.utils.EmailSender;
 import org.main.unimapapi.utils.Hashing;
 import org.main.unimapapi.utils.JwtToken;
 import org.main.unimapapi.utils.ServerLogger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseCookie;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,6 +43,10 @@ public class UserController {
     private final JwtToken jwtToken;
     private final TokenService tokenService;
     private final ConfirmationCodeService confirmationCodeService;
+    private final ChangeAvatarService changeAvatarService;
+    private final ChangeEmailService changeEmailService;
+    private final ChangePassService changePassService;
+    private final ChangeUsernameService changeUsernameService;
 
     /*
      * Method: POST
@@ -50,7 +57,7 @@ public class UserController {
     @PostMapping("register")
     public ResponseEntity<User> register(@RequestBody String jsonData) {
         try {
-            System.out.println("TEST "+jsonData);
+        //    System.out.println("TEST "+jsonData);
 
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonData);
@@ -58,9 +65,8 @@ public class UserController {
             String data = jsonNode.get("data").asText();
             String[] parts = data.split(":");
             if (parts.length != 4) {
-                //ServerLogger.logServer(ServerLogger.Level.WARNING, "Invalid registration data format.");
-
-                System.out.println("TEST2");
+                ServerLogger.logServer(ServerLogger.Level.ERROR, "Registration failed: Invalid data format.");
+           //     System.out.println("TEST2");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
@@ -71,15 +77,15 @@ public class UserController {
             String passwordHash = Hashing.hashPassword(password);
             String login = parts[3];
 
-            ServerLogger.logServer(ServerLogger.Level.INFO, "Registration attempt: username=" + username + ", email=" + email + ", login=" + login);
+           // ServerLogger.logServer(ServerLogger.Level.INFO, "Registration attempt: username=" + username + ", email=" + email + ", login=" + login);
 
-            System.out.println("TEST3");
+           // System.out.println("TEST3");
             if (userService.findByLogin(login).isPresent() || userService.findByEmail(email).isPresent()) {
                  //ServerLogger.logServer(ServerLogger.Level.WARNING, "Registration failed: User already exists (login=" + login + ", email=" + email + ")");
-                System.out.println("TESTZZZ");
+             //   System.out.println("TESTZZZ");
                 return ResponseEntity.status(HttpStatus.SEE_OTHER).build();
             }
-            System.out.println("TEST0");
+          //  System.out.println("TEST0");
 
 
             User_dto user_dto = new User_dto(login, email, passwordHash, username, false, false, null, null);
@@ -163,8 +169,7 @@ public class UserController {
         try {
             Optional<User> user = userService.findByEmail(email);
             if (user.isPresent()) {
-                String confirmationCode = confirmationCodeService.generateRandomCode();
-                LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
+                String confirmationCode = ConfirmationCodeService.generateRandomCode();                LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(1);
                 ConfirmationCode confirmationCodeEntity = new ConfirmationCode(user.get().getId(), confirmationCode, expirationTime);
                 confirmationCodeService.save(confirmationCodeEntity);
                 EmailSender.sendEmail(email, confirmationCode);
@@ -188,6 +193,7 @@ public class UserController {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonData);
+
             String data = jsonNode.get("data").asText();
             String[] parts = data.split(":");
 
@@ -252,7 +258,7 @@ public class UserController {
      */
     @DeleteMapping("user/delete/all/{userId}")
     private ResponseEntity<Boolean> deleteUserData(@PathVariable String userId,@RequestHeader("Authorization") String accessToken) {
-        System.out.println("I have delete userdata request in id: "+userId);
+     //   System.out.println("I have delete userdata request in id: "+userId);
         try {
             String token = accessToken.replace("Bearer ", "");
             String username = tokenService.getLoginFromAccessToken(token);
@@ -260,11 +266,12 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            System.out.println("I have delete userdata request in id: "+userId);
+        //    System.out.println("I have delete userdata request in id: "+userId);
             userService.delete_all_user_info(Long.parseLong(userId));
             return ResponseEntity.ok(true);
         } catch (Exception e) {
-            e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR,"Delete user data failed | Error: " + e.getMessage());
+        //    e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
@@ -276,7 +283,7 @@ public class UserController {
      */
     @DeleteMapping("user/delete/comments/{userId}")
     private ResponseEntity<Boolean> deleteUserComments(@PathVariable String userId, @RequestHeader("Authorization") String accessToken) {
-        System.out.println("I have delete user comments request in id: "+userId);
+     //   System.out.println("I have delete user comments request in id: "+userId);
         try {
             String token = accessToken.replace("Bearer ", "");
             String username = tokenService.getLoginFromAccessToken(token);
@@ -287,9 +294,96 @@ public class UserController {
             userService.delete_all_user_comments(Long.parseLong(userId));
             return ResponseEntity.ok(true);
         } catch (Exception e) {
-            e.printStackTrace();
+          //  e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR,"Delete user comments failed | Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
+
+
+
+    @Operation(summary = "Upload a file",
+            description = "Uploads a file with content type application/octet-stream")
+    @PutMapping(value = "/change_avatar", consumes = {"application/octet-stream", "image/png", "image/jpeg", "image/gif"})
+    public ResponseEntity<String> changeAvatar(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody byte[] avatarData,
+            @RequestParam("fileName") String fileName) {
+
+        try {
+            String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+
+            if (avatarData == null || avatarData.length == 0 || decodedFileName == null || decodedFileName.isBlank()) {
+                return ResponseEntity.badRequest().body("Invalid request. Avatar data and file name are required.");
+            }
+
+            String token = authorizationHeader.replace("Bearer ", "");
+            if (token.isEmpty() || !jwtToken.validateAccessToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized. Token is required.");
+            }
+
+            String login = jwtToken.extractUsernameFromAccessToken(token);
+
+            boolean avatarUpdated = changeAvatarService.updateAvatarData(login, avatarData, decodedFileName);
+        //    System.out.println("Avatar DATAA: " + Arrays.toString(avatarData));
+
+            if (avatarUpdated) {
+                return ResponseEntity.ok("Avatar updated successfully.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+            }
+        } catch (Exception e) {
+        //    System.out.println("Error processing the avatar: " + e.getMessage());
+         //   e.printStackTrace();
+            ServerLogger.logServer(ServerLogger.Level.ERROR, "Error processing the avatar: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing the avatar file: " + e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/change_email")
+    public ResponseEntity<String> changeEmail(@RequestBody EmailChangeRequest request) {
+        if (request == null || request.getEmail() == null || request.getLogin() == null) {
+            return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");
+        }
+
+        boolean emailChanged = changeEmailService.changeEmail(request.getLogin(), request.getEmail());
+
+        if (emailChanged) {
+            return ResponseEntity.ok("Email changed successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+    }
+
+    @PutMapping("/change_pass")
+    public ResponseEntity<String> changePassword(@RequestBody PasswordChangeRequest request) {
+        if (request == null || request.getEmail() == null || request.getNewPassword() == null) {
+            return ResponseEntity.badRequest().body("Invalid request. Email and new password are required.");
+        }
+
+        boolean passwordChanged = changePassService.changePassword(request.getEmail(), request.getNewPassword());
+
+        if (passwordChanged) {
+            return ResponseEntity.ok("Password changed successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+    }
+
+    @PutMapping("/change_username")
+    public ResponseEntity<String> changeAvatar(@RequestBody UsernameChangeRequest request) {
+        if (request == null || request.getEmail() == null || request.getUsername() == null) {
+            return ResponseEntity.badRequest().body("Invalid request. Email and avatar path are required.");
+        }
+
+        boolean avatarChanged = changeUsernameService.changeUsername(request.getEmail(), request.getUsername());
+
+        if (avatarChanged) {
+            return ResponseEntity.ok("Avatar changed successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+    }
 }

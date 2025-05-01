@@ -33,14 +33,14 @@ public class JWTController {
         String refreshToken = request.get("refreshToken");
         if (refreshToken == null || !tokenService.validateRefreshToken(refreshToken)) {
             ServerLogger.logServer(ServerLogger.Level.WARNING, "Not valid refresh token received.");
-            System.out.println("Not valid refresh token");
+          //  System.out.println("Not valid refresh token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String login = tokenService.getLoginFromRefreshToken(refreshToken);
         String newAccessToken = tokenService.createAccessToken(login);
 
-        System.out.println("I send new access token " + newAccessToken + " for user " + login);
+      //  System.out.println("I send new access token " + newAccessToken + " for user " + login);
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 }

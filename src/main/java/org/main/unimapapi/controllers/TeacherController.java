@@ -34,10 +34,11 @@ public class TeacherController {
     public ResponseEntity<?> getAllTeachers(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
             String token = authorizationHeader.replace("Bearer ", "");
-            System.out.println("Teacher token "+token);
+      //      System.out.println("Teacher token "+token);
 
             if (!jwtToken.validateAccessToken(token)) {
-                System.out.println("Unauthorized teacher token "+token);
+             //   System.out.println("Unauthorized teacher token "+token);
+                ServerLogger.logServer(ServerLogger.Level.ERROR, "Unauthorized access token: " + token);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
