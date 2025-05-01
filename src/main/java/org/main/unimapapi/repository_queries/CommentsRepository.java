@@ -2,7 +2,6 @@ package org.main.unimapapi.repository_queries;
 
 import org.main.unimapapi.dtos.Comment_dto;
 import org.main.unimapapi.services.TokenService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -10,39 +9,32 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Repository
+@RequiredArgsConstructor
 public class CommentsRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final TokenService tokenService;
 
-    private final RowMapper<Comment_dto> commentsRowMapper = new RowMapper<Comment_dto>() {
-        @Override
-        public Comment_dto mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Comment_dto comment = new Comment_dto();
-            comment.setUser_id(rs.getInt("user_id"));
-            comment.setComment_id(rs.getInt("comment_id"));
-            comment.setName(rs.getString("name"));
-            comment.setDescription(rs.getString("description"));
-            comment.setRating(rs.getString("rating"));
-            comment.setLevelAccess(rs.getInt("levelaccess"));
+    private final RowMapper<Comment_dto> commentsRowMapper = (rs, rowNum) -> {
+        Comment_dto comment = new Comment_dto();
+        comment.setUser_id(rs.getInt("user_id"));
+        comment.setComment_id(rs.getInt("comment_id"));
+        comment.setName(rs.getString("name"));
+        comment.setDescription(rs.getString("description"));
+        comment.setRating(rs.getString("rating"));
+        comment.setLevelAccess(rs.getInt("levelaccess"));
 
-            if (hasColumn(rs, "subject_code")) {
-                comment.setLooking_id(rs.getString("subject_code"));
-            } else if (hasColumn(rs, "teacher_id")) {
-                comment.setLooking_id(rs.getString("teacher_id"));
-            }
-
-            return comment;
+        if (hasColumn(rs, "subject_code")) {
+            comment.setLooking_id(rs.getString("subject_code"));
+        } else if (hasColumn(rs, "teacher_id")) {
+            comment.setLooking_id(rs.getString("teacher_id"));
         }
-    };
 
-    @Autowired
-    public CommentsRepository(JdbcTemplate jdbcTemplate, TokenService tokenService) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.tokenService = tokenService;
-    }
+        return comment;
+    };
 
     public List<Comment_dto> getAllSubjectsComments(String subjectId) {
         String sql = "SELECT u_d.name, c_s.* FROM comments_subjects c_s INNER JOIN user_data u_d ON c_s.user_id = u_d.id WHERE c_s.subject_code = ?";

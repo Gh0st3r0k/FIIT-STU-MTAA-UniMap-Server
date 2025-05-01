@@ -28,7 +28,7 @@ import java.util.Map;
 @RequestMapping("/api/unimap_pc/")
 public class SubjectController {
     JwtToken jwtToken;
-    DataFatcherRepository dataFatcherRepository = new DataFatcherRepository();
+    DataFatcherRepository dataFatcherRepository;
 
     @GetMapping("resources/subjects")
     public ResponseEntity<?> getAllSubjects(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {

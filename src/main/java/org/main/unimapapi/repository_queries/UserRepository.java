@@ -1,15 +1,13 @@
 package org.main.unimapapi.repository_queries;
 
 import org.main.unimapapi.entities.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 /*
  * Repository for working with user table (`user_data`)
@@ -19,26 +17,23 @@ import java.util.Optional;
  * - UserController → registration, login, data change, deletion
  */
 @Repository
+@RequiredArgsConstructor
 public class UserRepository {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     // Converts the SQL query result string into a User object
-    private final RowMapper<User> userRowMapper = new RowMapper<User>() {
-        @Override
-        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            User user = new User();
-            user.setId(rs.getLong("id"));
-            user.setLogin(rs.getString("login"));
-            user.setEmail(rs.getString("email"));
-            user.setPassword(rs.getString("password"));
-            user.setUsername(rs.getString("name"));
-            user.setAdmin(rs.getBoolean("is_admin"));
-            user.setPremium(rs.getBoolean("is_premium"));
-            user.setAvatar(rs.getBytes("avatar"));
-            user.setAvatarFileName(rs.getString("avatar_file_name"));
-            return user;
-        }
+    private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
+        User user = new User();
+        user.setId(rs.getLong("id"));
+        user.setLogin(rs.getString("login"));
+        user.setEmail(rs.getString("email"));
+        user.setPassword(rs.getString("password"));
+        user.setUsername(rs.getString("name"));
+        user.setAdmin(rs.getBoolean("is_admin"));
+        user.setPremium(rs.getBoolean("is_premium"));
+        user.setAvatar(rs.getBytes("avatar"));
+        user.setAvatarFileName(rs.getString("avatar_file_name"));
+        return user;
     };
 
     public Optional<User> findById(Long id) {
@@ -79,7 +74,7 @@ public class UserRepository {
 
     public Optional<User> findByUsername(String username) {
         if (username == null) {
-            throw new IllegalArgumentException("EMAIL CAN NOT BE NULL");
+            throw new IllegalArgumentException("USERNAME CAN NOT BE NULL");
         }
 
         String sql = "SELECT * FROM user_data WHERE name = ?";
@@ -132,7 +127,6 @@ public class UserRepository {
         jdbcTemplate.update(deleteCommentsTeachersSql, id);
         jdbcTemplate.update(deleteConfCodesSql, id);
         jdbcTemplate.update(deleteUserSql, id);
-
     }
 
     // Deletes only the user's comments
@@ -143,12 +137,4 @@ public class UserRepository {
         jdbcTemplate.update(deleteCommentsSubjectsSql, id);
         jdbcTemplate.update(deleteCommentsTeachersSql, id);
     }
-
-
-
-
-
-
-
-
 }

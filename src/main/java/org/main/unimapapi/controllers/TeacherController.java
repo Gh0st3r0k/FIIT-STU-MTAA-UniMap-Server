@@ -28,7 +28,7 @@ import java.util.Map;
 @RequestMapping("/api/unimap_pc/")
 public class TeacherController {
     JwtToken jwtToken;
-    DataFatcherRepository dataFatcherRepository = new DataFatcherRepository();
+    DataFatcherRepository dataFatcherRepository;
 
     @GetMapping("resources/teachers")
     public ResponseEntity<?> getAllTeachers(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
