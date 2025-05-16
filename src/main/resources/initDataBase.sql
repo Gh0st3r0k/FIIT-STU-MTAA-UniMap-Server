@@ -9,7 +9,7 @@ CREATE TABLE public.user_data (
     id SERIAL PRIMARY KEY,
     login VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     name VARCHAR(255) NOT NULL,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     is_premium BOOLEAN NOT NULL DEFAULT FALSE,
@@ -71,7 +71,7 @@ CREATE TABLE public.teachers (
     id VARCHAR(20) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
-    phone VARCHAR(20),
+    phone VARCHAR(65),
     office VARCHAR(50)
 );
 
@@ -99,5 +99,20 @@ CREATE TABLE public.news (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     date_of_creation TIMESTAMP NOT NULL
+);
+
+
+
+-- Create devices table
+CREATE TABLE devices (
+                         id SERIAL PRIMARY KEY,
+                         device_id VARCHAR(255) NOT NULL UNIQUE,
+                         push_token VARCHAR(255),
+                         platform VARCHAR(50),
+                         type VARCHAR(50),
+                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                         last_active_at TIMESTAMP
 );

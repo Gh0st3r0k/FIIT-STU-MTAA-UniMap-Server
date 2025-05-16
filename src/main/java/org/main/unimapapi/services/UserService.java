@@ -25,7 +25,7 @@ public class UserService {
                 .username(dto.getUsername())
                 .isAdmin(dto.isAdmin())
                 .isPremium(dto.isPremium())
-                .avatar(dto.getAvatarBinary() != null ? dto.getAvatarBinary().getBytes() : null)
+                .avatar(dto.getAvatarBinary() != null ? dto.getAvatarBinary() : null)
                 .avatarFileName(dto.getAvatarFileName())
                 .build();
 
@@ -108,6 +108,19 @@ public class UserService {
                 .orElseGet(() -> {
                     ServerLogger.logServer(ServerLogger.Level.WARNING, "User not found!");
                     return false;
+                });
+    }
+
+    public User updatePremiumStatus(String login) {
+        return userRepository.findByLogin(login)
+                .map(user -> {
+                    user.setPremium(!user.isPremium());
+                    userRepository.update(user);
+                    return user;
+                })
+                .orElseGet(() -> {
+                    ServerLogger.logServer(ServerLogger.Level.WARNING, "User not found!");
+                    return null;
                 });
     }
 }
